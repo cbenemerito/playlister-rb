@@ -1,4 +1,6 @@
-
+require_relative 'lib/artist'
+require_relative 'lib/song'
+require_relative 'lib/genre'
 
 def test(title, &b)
   begin
