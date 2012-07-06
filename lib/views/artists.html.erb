@@ -1,0 +1,9 @@
+<h1>Pitchfork Top 100 Songs</h1>
+
+<h2>There are <%= @artists.count %> artists:</h2>
+
+<ul>
+	<% @artists.each do |artist| %>
+		<li><a href="<%= "artists/#{artist.name}.html" %>"><%= artist.name %></a> - Song Count: <%= artist.songs.count %></li>
+	<% end %>
+</ul>

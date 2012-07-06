@@ -4,7 +4,11 @@ class Artist
   @@artists = []
 
   def initialize
-    @@artists << self
+#    if @@artists.include?(self)
+#    	@@artists
+#    else
+#    	@@artists << self
+    @@artists << self #unless @@artists.include?(self)
     @songs = []
   end
 
@@ -25,6 +29,15 @@ class Artist
   end
 
   def add_song(song)
-    self.songs << song
+    @songs << song
+    Genre.add_artist(self, song) if song.genre
+  end
+
+  def genres
+  	@songs.collect {|x| x.genre}
+  end
+
+  def to_binding
+  	binding
   end
 end

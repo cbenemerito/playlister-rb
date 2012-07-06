@@ -1,0 +1,9 @@
+<h1>Pitchfork Top 100 Songs</h1>
+
+<h2>There are <%= @genres.count %> genres:</h2>
+
+<ul>
+	<% @genres.each do |genre| %>
+		<li><a href="<%= "genres/#{genre.name}.html" %>"><%= genre.name %></a>: <%= genre.songs.count %> songs, <%= genre.artists.count %> artists</li>
+	<% end %>
+</ul>

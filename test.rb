@@ -1,6 +1,7 @@
 require_relative 'lib/artist'
 require_relative 'lib/song'
 require_relative 'lib/genre'
+require 'ERB'
 
 def test(title, &b)
   begin
@@ -101,7 +102,6 @@ end
 test 'artists have genres' do
   artist = Artist.new
   song = Song.new
-
   song.genre = Genre.new.tap{|g| g.name = "rap"}
   artist.add_song(song)
 
@@ -116,12 +116,12 @@ end
 test 'A genre has a name' do
   genre = Genre.new
   genre.name = 'rap'
-
   assert_equal genre.name, 'rap'
 end
 
 test 'A genre has many songs' do
-  genre = Genre.new.tap{|g| g.name = 'rap'}
+  Genre.reset_hashes # added to reset changes made in previous tests
+  genre = Genre.new.tap{|g| g.name = 'rap'} 
   [1,2].each do
     song = Song.new
     song.genre = genre
@@ -131,6 +131,7 @@ test 'A genre has many songs' do
 end
 
 test 'A genre has many artists' do
+  Genre.reset_hashes #added to reset changes made in previous tests
   genre = Genre.new.tap{|g| g.name = 'rap'}
 
   [1,2].each do
@@ -144,6 +145,7 @@ test 'A genre has many artists' do
 end
 
 test 'A genres Artists are unique' do
+  Genre.reset_hashes #added to reset changes made in previous tests
   genre = Genre.new.tap{|g| g.name = 'rap'}
   artist = Artist.new
 
@@ -234,3 +236,98 @@ test 'A song has an artist'
 
 # Extra Credit:
 # Use a ruby module somewhere to refactor common functionality.
+
+#clear the tracking arrays of actions used for tests abovea
+Artist.reset_artists
+Song.reset_songs
+Genre.reset_genres
+Genre.reset_hashes
+
+path = 'data'
+artist_names = [] #array to collect artist names and check for duplicates
+genre_names = {} #hash to collect genre names and check for duplicates
+artist = ''
+
+Dir.foreach(path) do |filename| 
+  next if filename.match(/^\./)
+  parts = filename.split(" - ")
+  parts2 = parts.last.split(" [")
+  artist_name = parts.first
+  song_name = parts2.first
+  genre_name = parts2.last.gsub("].mp3", "")
+
+  if !genre_names.include?(genre_name.to_sym)
+    genre = Genre.new
+    genre.name = genre_name
+    genre_names[genre.name.to_sym] = genre
+  else
+    genre = genre_names[genre_name.to_sym]
+  end
+
+  if !artist_names.include?(artist_name)
+    artist = Artist.new 
+    artist.name = artist_name
+    artist_names << artist_name
+  end
+
+  song = Song.new
+  song.name = song_name
+  song.artist = artist
+  song.genre = genre
+  artist.add_song(song)
+  Genre.add_artist(artist, song)
+end
+
+html_path = 'site'
+
+@artists = Artist.all
+artists_erb = File.open('lib/views/artists.html.erb').read
+artists_template = ERB.new(artists_erb)
+
+File.open(html_path + '/artists.html', 'w+') do |f|
+  f.write artists_template.result
+end
+
+#puts artists_template.result
+
+@genres = Genre.all
+genres_erb = File.open('lib/views/genres.html.erb').read
+genres_template = ERB.new(genres_erb)
+
+File.open(html_path + '/genres.html', 'w+') do |f|
+  f.write genres_template.result
+end
+
+#puts genres_template.result
+
+artist_erb = File.open('lib/views/artist.html.erb').read
+artist_template = ERB.new(artist_erb)
+
+@artists.each do |artist|
+  full_html_path = html_path + '/artists/' + artist.name + '.html'
+  File.open(full_html_path, 'w+') do |f|
+    f.write artist_template.result(artist.to_binding)
+  end
+end
+
+genre_erb = File.open('lib/views/genre.html.erb').read
+genre_template = ERB.new(genre_erb)
+
+@genres.each do |genre|
+  full_html_path = html_path + '/genres/' + genre.name + '.html'
+  File.open(full_html_path, 'w+') do |f|
+    f.write genre_template.result(genre.to_binding)
+  end
+end
+
+@songs = Song.all
+song_erb = File.open('lib/views/song.html.erb').read
+song_template = ERB.new(song_erb)
+
+@songs.each do |song|
+  full_html_path = html_path + '/songs/' + song.name + '.html'
+  File.open(full_html_path, 'w+') do |f|
+    f.write song_template.result(song.to_binding)
+  end
+end
+

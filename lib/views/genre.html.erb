@@ -1,0 +1,7 @@
+<h1><%= name %> - <%= songs.count %> songs, <%= artists.count %> artists</h1>
+
+<ul>
+	<% songs.each do |song| %>
+		<li><a href="<%= "../artists/#{song.artist.name}.html" %>"><%= song.artist.name %></a> - <a href="<%= "../songs/#{song.name}.html" %>"><%= song.name %></a></li>
+	<% end %>
+</ul>
